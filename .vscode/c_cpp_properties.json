@@ -10,7 +10,7 @@
             "includePath": [
                 "/Users/eoghancollins/Robot/include",
                 "/Users/eoghancollins/Robot/src",
-                "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/SparkFun LSM6DS3 Breakout/src",
+                "/Users/eoghancollins/Robot/lib/SparkFun_LIS331_Arduino_Library-master/src",
                 "/Users/eoghancollins/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/ESP32Servo/src",
                 "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/ArduinoJson/src",
@@ -253,7 +253,7 @@
                 "path": [
                     "/Users/eoghancollins/Robot/include",
                     "/Users/eoghancollins/Robot/src",
-                    "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/SparkFun LSM6DS3 Breakout/src",
+                    "/Users/eoghancollins/Robot/lib/SparkFun_LIS331_Arduino_Library-master/src",
                     "/Users/eoghancollins/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/ESP32Servo/src",
                     "/Users/eoghancollins/Robot/.pio/libdeps/arduino_nano_esp32/ArduinoJson/src",
@@ -503,6 +503,7 @@
                 "ARDUINO_USB_DFU_ON_BOOT=1",
                 "ARDUINO_RUNNING_CORE=1",
                 "ARDUINO_EVENT_RUNNING_CORE=1",
+                "ARDUINO=100",
                 "HAVE_CONFIG_H",
                 "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\"",
                 "UNITY_INCLUDE_CONFIG_H",
