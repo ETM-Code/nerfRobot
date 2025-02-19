@@ -5,10 +5,13 @@
 #include "debug.h"
 #include "websocket.h"
 #include "imu.h"
-
+#include "joystick.h"
+#include "buttons.h"
+#include "motors.h"
 // WebSocket server instance
 WebSocketsServer webSocket = WebSocketsServer(81);
 bool clientConnected = false;
+bool enableLocalControl = true;
 
 // Servo objects
 Servo servo1;
@@ -20,7 +23,6 @@ float rotationY = 0;
 float accel = 0;
 float accelBiasX = 0;
 float accelBiasY = 0;
-bool enableLocalControl = true;
 
 // Joystick and IMU variables
 float tiltX = 0;
@@ -55,20 +57,14 @@ void setup() {
   servo2.attach(SERVO2_PIN);
 
   // Attach the DC Motors
-  pinMode(MOTOR_RIGHT_PIN, OUTPUT);
-  pinMode(MOTOR_LEFT_PIN, OUTPUT);
+  setupMotors();
 
   // Attach the Joystick
-  pinMode(STICK_X, INPUT);
-  pinMode(STICK_Y, INPUT);
+  setupJoystick();
 
   // Setup calibration pins
-  pinMode(IMU_CALIBRATION_PIN, INPUT);
-  pinMode(JOYSTICK_CALIBRATION_PIN, INPUT);
+  setupButtons();
 
-  // Initialize I2C
-  Wire.begin(SDA_PIN, SCL_PIN);
-  
   // Initialize IMU
   if (!initializeIMU())
   {
@@ -83,95 +79,45 @@ void setup() {
   }
 
   // Print initial analog readings
+  calibrateJoystick();
   Serial.print("Initial Joystick X reading: ");
-  Serial.println(analogRead(STICK_X));
+  Serial.println(readJoystickX());
   Serial.print("Initial Joystick Y reading: ");
-  Serial.println(analogRead(STICK_Y));
+  Serial.println(readJoystickY());
+
+  calibrateIMU();
+  readIMUData(tiltX, tiltY, tiltZ);
+  Serial.print("Initial IMU X reading: ");
+  Serial.println(tiltX);
+  Serial.print("Initial IMU Y reading: ");
+  Serial.println(tiltY);
+  Serial.print("Initial IMU Z reading: ");
+  Serial.println(tiltZ);
 }
 
 void loop() {
   webSocket.loop();
 
   // Check for IMU calibration
-  if (digitalRead(IMU_CALIBRATION_PIN) == HIGH) {
-    float sumTiltX = 0, sumTiltY = 0;
-    const int numSamples = 10;
-    for (int i = 0; i < numSamples; i++) {
-      readIMUData(tiltX, tiltY, tiltZ, magX, magY, magZ);
-      sumTiltX += tiltX;
-      sumTiltY += tiltY;
-      delay(10);
-    }
-    imuOffsetX = sumTiltX / numSamples;
-    imuOffsetY = sumTiltY / numSamples;
-    Serial.println("IMU calibrated!");
-    Serial.print("X offset: "); Serial.println(imuOffsetX);
-    Serial.print("Y offset: "); Serial.println(imuOffsetY);
-    delay(500); // Debounce
+  if (imuPressed()) {
+    calibrateIMU();
   }
 
   // Check for Joystick calibration
-  if (digitalRead(JOYSTICK_CALIBRATION_PIN) == HIGH) {
-    long sumX = 0, sumY = 0;
-    const int numSamples = 10;
-    for (int i = 0; i < numSamples; i++) {
-      sumX += analogRead(STICK_Y);  // Note: X and Y are swapped as per original code
-      sumY += analogRead(STICK_X);
-      delay(10);
-    }
-    int rawX = sumX / numSamples;
-    int rawY = sumY / numSamples;
-    joystickOffsetX = rawX;
-    joystickOffsetY = rawY;
-    // Calculate maximum deviation from the center reading for each axis
-    int maxDevX = max(rawX, 4095 - rawX);
-    int maxDevY = max(rawY, 4095 - rawY);
-    // Use the maximum deviation to generate a scale factor to map the deflection to [-1,1]
-    joystickScaleX = (maxDevX != 0) ? (1.0 / maxDevX) : 1.0;
-    joystickScaleY = (maxDevY != 0) ? (1.0 / maxDevY) : 1.0;
-    Serial.println("Joystick calibrated!");
-    Serial.print("X offset: "); Serial.println(joystickOffsetX);
-    Serial.print("Y offset: "); Serial.println(joystickOffsetY);
-    Serial.print("X scale: "); Serial.println(joystickScaleX);
-    Serial.print("Y scale: "); Serial.println(joystickScaleY);
-    delay(500); // Debounce
+  if (joystickPressed()) {
+    calibrateJoystick();
   }
 
   if (enableLocalControl) {
     // Read joystick values (swapped X and Y)
-    int rawJoystickY = analogRead(STICK_X);
-    int rawJoystickX = analogRead(STICK_Y);
+    joystickX = readJoystickX();
+    joystickY = readJoystickY();
+    rotationX += joystickX/JOYSTICK_SCALE_X * OUTPUT_SCALE;
+    rotationY += joystickY/JOYSTICK_SCALE_Y * OUTPUT_SCALE;
     
-    // Apply calibration: subtract the offset and scale the deviation to normalize to [-1, 1]
-    joystickX = (rawJoystickX - joystickOffsetX) * joystickScaleX;
-    joystickY = -1 * (rawJoystickY - joystickOffsetY) * joystickScaleY;
+    //read IMU data
+    readIMUData(tiltX, tiltY, tiltZ);
     
-    // Directly scale the normalized values to set the rotation increment (max increment around 8)
-    float scaledJoystickX = joystickX * 8.0;
-    float scaledJoystickY = joystickY * 8.0;
-    
-    // Update rotation values with constraint so the servo positions remain within [-90,90]
-    rotationX = constrain(rotationX + scaledJoystickX, -90, 90);
-    rotationY = constrain(rotationY - scaledJoystickY, -90, 90);
-    
-    // Read IMU values for tilt-based control
-    readIMUData(tiltX, tiltY, tiltZ, magX, magY, magZ);
-    
-    // Apply the IMU calibration offsets
-    tiltX -= imuOffsetX;
-    tiltY -= imuOffsetY;
-    
-    // Apply tilt controls similar to websocket logic
-    if (abs(tiltY) > 0.5) {
-      if (tiltY > 0) {
-        accelBiasY = tiltY;
-      } else {
-        accelBiasX = -tiltY;
-      }
-    } else {
-      accelBiasX = 0;
-      accelBiasY = 0;
-    }
   }
 
   // Update the servos
@@ -179,8 +125,7 @@ void loop() {
   servo2.write(rotationY);
 
   // Update the DC Motors
-  analogWrite(MOTOR_RIGHT_PIN, accel + accelBiasX - accelBiasY);
-  analogWrite(MOTOR_LEFT_PIN, accel - accelBiasX + accelBiasY);
+  setMotorSpeeds(tiltX, tiltY);
   
   // Print debug information with calibrated values
   debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);

@@ -8,7 +8,8 @@
 //DC Motors
 #define MOTOR_RIGHT_PIN A2
 #define MOTOR_LEFT_PIN A1
-
+#define MOTOR_ENABLE_RIGHT_PIN 11
+#define MOTOR_ENABLE_LEFT_PIN 10
 //IMU - Using Arduino Nano ESP32's I2C pins
 #define SDA_PIN A4  // GPIO 8
 #define SCL_PIN A5  // GPIO 9

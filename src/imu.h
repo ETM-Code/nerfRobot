@@ -11,7 +11,7 @@ extern LIS331 accelerometer;
 // Function declarations
 void displaySensorDetails(void);
 bool initializeIMU(void);
-void readIMUData(float& tiltX, float& tiltY, float& tiltZ, 
-                 float& magX, float& magY, float& magZ);
+void readIMUData(float& tiltX, float& tiltY, float& tiltZ);
+void calibrateIMU(void);
 
 #endif // IMU_H 
