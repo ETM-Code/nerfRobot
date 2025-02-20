@@ -123,9 +123,13 @@ void loop() {
   // Update the servos
   servo1.write(rotationX);
   servo2.write(rotationY);
+  Serial.printf("Joystick X: %d", joystickX);
+  Serial.printf("Joystick Y: %d", joystickY); 
 
   // Update the DC Motors
   setMotorSpeeds(tiltX, tiltY);
+  Serial.printf("TiltX: %f", tiltX);
+  Serial.printf("TiltY: %f", tiltY);
   
   // Print debug information with calibrated values
   debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);
