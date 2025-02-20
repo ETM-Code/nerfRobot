@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "pins.h"
 #include "joystick.h"
+#include "debounceReading.h"
 
 int calibZeroX = 1024/2;
 int calibZeroY = 1024/2;
@@ -14,21 +15,23 @@ void setupJoystick(void) {
 // Read the joystick X axis
 float readJoystickX(void) {
     // Read raw value and center it around zero
-    int rawValue = analogRead(STICK_X) - calibZeroX;
+    if(shouldntReadJoystick()) return 800000;
+    int rawValue = map(analogRead(STICK_X), 0, 4095, 4095, 0) - calibZeroX;
+    // Serial.println(analogRead(STICK_X));
     
     // Map to a -512 to +512 range
     // Positive values for right movement, negative for left
     if (rawValue > 0) {
-        return map(rawValue, 0, 4095 - calibZeroY, 0, 2048)/2048.00f;
+        return map(rawValue, 0, 4095 - calibZeroX, 0, 2048)/2048.00f;
     } else {
-        return map(rawValue, -calibZeroY, 0, -2048, 0)/2048.00f;
+        return map(rawValue, -calibZeroX, 0, -2048, 0)/2048.00f;
     }
 }
 
 // Read the joystick Y axis
 float readJoystickY(void) {
     // Read raw value and center it around zero
-    delay(100);
+    if(shouldntReadJoystick()) return 800000;
     int rawValue = map(analogRead(STICK_Y), 0, 4095, 4095, 0) - calibZeroY;
     // Serial.println(analogRead(STICK_Y));
     

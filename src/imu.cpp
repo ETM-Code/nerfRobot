@@ -44,7 +44,7 @@ void mapIMUData(float& tiltX, float& tiltY, float& tiltZ) {
 }
 
 void readIMUData(float& tiltX, float& tiltY, float& tiltZ) {
-    // delay(100);
+    if(shouldntReadIMU()) return;
     sensors_event_t a, g, temp;
     imu.getEvent(&a, &g, &temp);
 

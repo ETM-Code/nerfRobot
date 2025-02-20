@@ -8,6 +8,7 @@
 #include "joystick.h"
 #include "buttons.h"
 #include "motors.h"
+#include "debounceReading.h"
 // WebSocket server instance
 WebSocketsServer webSocket = WebSocketsServer(81);
 bool clientConnected = false;
@@ -21,11 +22,17 @@ Servo servo1;
 Servo servo2;
 
 // Control variables
-float rotationX = 0;
-float rotationY = 0;
+float rotationX = 90;
+float rotationY = 90;
 float accel = 0;
 float accelBiasX = 0;
 float accelBiasY = 0;
+
+// Timestamps for non-blocking prints
+unsigned long lastJoystickPrint = 0;
+unsigned long lastRotationPrint = 0;
+unsigned long lastTiltPrint = 0;
+const unsigned long PRINT_INTERVAL = 100; // 100ms interval
 
 // Joystick and IMU variables
 float tiltX = 0;
@@ -113,11 +120,17 @@ void loop() {
 
   // if (enableLocalControl) {
     // Read joystick values (swapped X and Y)
-    joystickX = readJoystickX();
+    float joyXin = readJoystickX();
+    float joyYin = readJoystickY();
+    if(joyXin < 10000) joystickX = joyXin;
     // Serial.println("Reading");
-    joystickY = readJoystickY();
-    rotationX += joystickX * OUTPUT_SCALE;
-    rotationY += joystickY * OUTPUT_SCALE;
+    if(joyYin < 10000) joystickY = joyYin;
+    rotationX += abs(joystickX) > 0.15 ? joystickX * OUTPUT_SCALE : 0;
+    if(rotationX > 180) rotationX = 180;
+    if(rotationX < 0) rotationX = 0;
+    rotationY += abs(joystickY) > 0.15 ? joystickY * OUTPUT_SCALE : 0;
+    if(rotationY > 180) rotationY = 180;
+    if(rotationY < 0) rotationY = 0;
     
     //read IMU data
     readIMUData(tiltX, tiltY, tiltZ);
@@ -127,20 +140,34 @@ void loop() {
   // Update the servos
   servo1.write(rotationX);
   servo2.write(rotationY);
-  if(PRINT_JOYSTICK_VALUES){
-    Serial.printf("Joystick X: %d", joystickX);
-    Serial.printf("Joystick Y: %d", joystickY); 
+
+  if(PRINT_JOYSTICK_VALUES && !shouldntReadJoystick()){
+    unsigned long currentTime = millis();
+    if (currentTime - lastJoystickPrint >= PRINT_INTERVAL) {
+      Serial.printf("Joystick X: %f\n", joystickX);
+      Serial.printf("Joystick Y: %f\n", joystickY); 
+      lastJoystickPrint = currentTime;
+    }
   }
 
   if(PRINT_ROTATION_VALUES){
-    Serial.printf("Rotation X: %f", rotationX);
-    Serial.printf("Rotation Y: %f", rotationY);
+    unsigned long currentTime = millis();
+    if (currentTime - lastRotationPrint >= PRINT_INTERVAL) {
+      Serial.printf("Rotation X: %f\n", rotationX);
+      Serial.printf("Rotation Y: %f\n", rotationY);
+      // Serial.printf("Joystick Y: %f\n", joystickY);
+      lastRotationPrint = currentTime;
+    }
   }
   // Update the DC Motors
   setMotorSpeeds(tiltX, tiltY);
-  if(PRINT_TILT_VALUES){
-    Serial.printf("TiltX: %f", tiltX);
-    Serial.printf("TiltY: %f", tiltY);
+  if(PRINT_TILT_VALUES && shouldntReadIMU()){
+    unsigned long currentTime = millis();
+    if (currentTime - lastTiltPrint >= PRINT_INTERVAL) {
+      Serial.printf("TiltX: %f\n", tiltX);
+      Serial.printf("TiltY: %f\n", tiltY);
+      lastTiltPrint = currentTime;
+    }
   }
   // Print debug information with calibrated values
   // debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);
