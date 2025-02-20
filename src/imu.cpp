@@ -22,6 +22,15 @@ bool initializeIMU(void) {
     return imu.begin();
 }
 
+float clamp(float value, float min, float max) {
+    return std::min(std::max(value, min), max);
+}
+
+void mapIMUData(float& tiltX, float& tiltY, float& tiltZ) {
+    tiltX = clamp(map(tiltX, zeroX-9.8, zeroX+9.8, -1, 1), -1, 1);
+    tiltY = clamp(map(tiltY, zeroY-9.8, zeroY+9.8, -1, 1), -1, 1);
+}
+
 void readIMUData(float& tiltX, float& tiltY, float& tiltZ) {
     sensors_event_t aevent, mevent;
     imu.getEvent(&aevent, &mevent);
@@ -31,18 +40,12 @@ void readIMUData(float& tiltX, float& tiltY, float& tiltZ) {
     mapIMUData(tiltX, tiltY, tiltZ);
 } 
 
-void mapIMUData(float& tiltX, float& tiltY, float& tiltZ) {
-    tiltX = clamp(map(tiltX, zeroX-9.8, zeroX+9.8, -1, 1), -1, 1);
-    tiltY = clamp(map(tiltY, zeroY-9.8, zeroY+9.8, -1, 1), -1, 1);
-}
 
 void calibrateIMU(void) {
     int16_t x, y, z;
-    accelerometer.readAxes(x, y, z);
-    zeroX = accelerometer.convertToG(100, x);
-    zeroY = accelerometer.convertToG(100, y);
+    sensors_event_t aevent, mevent;
+    imu.getEvent(&aevent, &mevent); 
+    zeroX = aevent.acceleration.x;
+    zeroY = aevent.acceleration.y;
 }
 
-float clamp(float value, float min, float max) {
-    return std::min(std::max(value, min), max);
-}

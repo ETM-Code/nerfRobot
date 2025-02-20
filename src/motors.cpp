@@ -3,12 +3,8 @@
 #include "motors.h"
 #include <math.h>
 
-void setupMotors() {
-    pinMode(MOTOR_RIGHT_PIN, OUTPUT);
-    pinMode(MOTOR_LEFT_PIN, OUTPUT);
-    pinMode(MOTOR_ENABLE_RIGHT_PIN, OUTPUT);
-    pinMode(MOTOR_ENABLE_LEFT_PIN, OUTPUT);
-    activateMotors();
+bool validTilt(float tilt){
+    return abs(tilt) > 0.3;
 }
 
 void activateMotors() {
@@ -26,13 +22,18 @@ void setMotorSpeeds(float tiltX, float tiltY) {
     //X axis controls speed distribution
     if(validTilt(tiltY)) {
         float speed = abs(tiltY) * 127;
-        float leftSpeed = speed * (abs(tiltX)>0.2?1:(1 + tiltX));
-        float rightSpeed = speed * (abs(tiltX)>0.2?1:(1 - tiltX));
+        float leftSpeed = speed * (validTilt(tiltX)?1:(1 + tiltX));
+        float rightSpeed = speed * (validTilt(tiltX)?1:(1 - tiltX));
         analogWrite(MOTOR_LEFT_PIN, leftSpeed);
         analogWrite(MOTOR_RIGHT_PIN, rightSpeed);
     }
 }
 
-bool validTilt(float tiltY){
-    return abs(tiltY) > 0.3;
+void setupMotors() {
+    pinMode(MOTOR_RIGHT_PIN, OUTPUT);
+    pinMode(MOTOR_LEFT_PIN, OUTPUT);
+    pinMode(MOTOR_ENABLE_RIGHT_PIN, OUTPUT);
+    pinMode(MOTOR_ENABLE_LEFT_PIN, OUTPUT);
+    activateMotors();
 }
+
