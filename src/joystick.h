@@ -6,8 +6,8 @@
 #define OUTPUT_SCALE 8.0
 
 void setupJoystick(void);
-int readJoystickX(void);
-int readJoystickY(void);
+float readJoystickX(void);
+float readJoystickY(void);
 void calibrateJoystick(void);
 
 #endif // JOYSTICK_H

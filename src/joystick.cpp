@@ -12,30 +12,32 @@ void setupJoystick(void) {
 }
 
 // Read the joystick X axis
-int readJoystickX(void) {
+float readJoystickX(void) {
     // Read raw value and center it around zero
     int rawValue = analogRead(STICK_X) - calibZeroX;
     
     // Map to a -512 to +512 range
     // Positive values for right movement, negative for left
     if (rawValue > 0) {
-        return map(rawValue, 0, 1023 - calibZeroX, 0, 512);
+        return map(rawValue, 0, 4095 - calibZeroY, 0, 2048)/2048.00f;
     } else {
-        return map(rawValue, -calibZeroX, 0, -512, 0);
+        return map(rawValue, -calibZeroY, 0, -2048, 0)/2048.00f;
     }
 }
 
 // Read the joystick Y axis
-int readJoystickY(void) {
+float readJoystickY(void) {
     // Read raw value and center it around zero
-    int rawValue = analogRead(STICK_Y) - calibZeroY;
+    delay(100);
+    int rawValue = map(analogRead(STICK_Y), 0, 4095, 4095, 0) - calibZeroY;
+    // Serial.println(analogRead(STICK_Y));
     
-    // Map to a -512 to +512 range
+    // Map to a -1 to +1 range
     // Positive values for up movement, negative for down
     if (rawValue > 0) {
-        return map(rawValue, 0, 1023 - calibZeroY, 0, 512);
+        return map(rawValue, 0, 4095 - calibZeroY, 0, 2048)/2048.00f;
     } else {
-        return map(rawValue, -calibZeroY, 0, -512, 0);
+        return map(rawValue, -calibZeroY, 0, -2048, 0)/2048.00f;
     }
 }
 

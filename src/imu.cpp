@@ -1,25 +1,37 @@
 #include "imu.h"
 #include "Wire.h"
 #include "pins.h"
-#include <Adafruit_FXOS8700.h>
+#include <Adafruit_MPU6050.h>
 #include <algorithm>
 
 // Initialize the IMU instance
-Adafruit_FXOS8700 imu = Adafruit_FXOS8700(0x870000, 0x870001);
+Adafruit_MPU6050 imu;
 static float zeroX = 0;
 static float zeroY = 0;
 
 void displaySensorDetails(void) {
     Serial.println("------------------------------------");
-    Serial.println("FXOS8700 ACCELEROMETER");
+    Serial.println("MPU6050 ACCELEROMETER");
     Serial.println("------------------------------------");
-    Serial.println("Range: ±2g");  // Updated to match our configuration
-    Serial.println("Resolution: 14-bit");
+    Serial.println("Range: ±2g");
+    Serial.println("Resolution: 16-bit");
     Serial.println("------------------------------------");
 }
 
 bool initializeIMU(void) {
-    return imu.begin();
+    if (!imu.begin()) {
+        return false;
+    }
+    
+    // Configure the MPU6050
+    imu.setHighPassFilter(MPU6050_HIGHPASS_0_63_HZ);
+    imu.setMotionDetectionThreshold(1);
+    imu.setMotionDetectionDuration(20);
+    imu.setInterruptPinLatch(true);
+    imu.setInterruptPinPolarity(true);
+    imu.setMotionInterrupt(true);
+    
+    return true;
 }
 
 float clamp(float value, float min, float max) {
@@ -32,20 +44,21 @@ void mapIMUData(float& tiltX, float& tiltY, float& tiltZ) {
 }
 
 void readIMUData(float& tiltX, float& tiltY, float& tiltZ) {
-    sensors_event_t aevent, mevent;
-    imu.getEvent(&aevent, &mevent);
-    tiltX = aevent.acceleration.x;
-    tiltY = aevent.acceleration.y;
-    tiltZ = aevent.acceleration.z;
-    mapIMUData(tiltX, tiltY, tiltZ);
+    // delay(100);
+    sensors_event_t a, g, temp;
+    imu.getEvent(&a, &g, &temp);
+
+    tiltX = a.acceleration.x;
+    // Serial.println(a.acceleration.x);
+    tiltY = a.acceleration.y;
+    tiltZ = a.acceleration.z;
+    // mapIMUData(tiltX, tiltY, tiltZ);
 } 
 
-
 void calibrateIMU(void) {
-    int16_t x, y, z;
-    sensors_event_t aevent, mevent;
-    imu.getEvent(&aevent, &mevent); 
-    zeroX = aevent.acceleration.x;
-    zeroY = aevent.acceleration.y;
+    sensors_event_t a, g, temp;
+    imu.getEvent(&a, &g, &temp);
+    zeroX = a.acceleration.x;
+    zeroY = a.acceleration.y;
 }
 

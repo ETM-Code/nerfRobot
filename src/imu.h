@@ -3,11 +3,11 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <Adafruit_FXOS8700.h>
-#include <algorithm>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 
 // Global IMU instance
-extern Adafruit_FXOS8700 imu;
+extern Adafruit_MPU6050 imu;
 
 // Function declarations
 void displaySensorDetails(void);
@@ -16,4 +16,4 @@ void readIMUData(float& tiltX, float& tiltY, float& tiltZ);
 void calibrateIMU(void);
 bool validTilt(float tilt);
 
-#endif // IMU_H 
+#endif // IMU_H

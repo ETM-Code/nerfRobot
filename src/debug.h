@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define DEBUG_MODE 1 // 0 = off, 1 = on
+#define DEBUG_MODE 0 // 0 = off, 1 = on
 
 // Debug print intervals
 const unsigned long STATUS_PRINT_INTERVAL = 2000;  // Print every 2000ms (2 seconds)

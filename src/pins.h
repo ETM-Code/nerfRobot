@@ -16,8 +16,8 @@
 #define SCL_PIN A5  // GPIO 9
 
 //Joystick
-#define STICK_X A3
-#define STICK_Y A7
+#define STICK_X A7
+#define STICK_Y A3
 
 //Calibration Pins
 #define IMU_CALIBRATION_PIN 7

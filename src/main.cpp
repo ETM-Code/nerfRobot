@@ -13,6 +13,9 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 bool clientConnected = false;
 bool enableLocalControl = true;
 
+bool PRINT_TILT_VALUES = false;
+bool PRINT_JOYSTICK_VALUES = false;
+bool PRINT_ROTATION_VALUES = false;
 // Servo objects
 Servo servo1;
 Servo servo2;
@@ -43,7 +46,7 @@ float joystickScaleX = 1.0;
 float joystickScaleY = 1.0;
 
 void setup() {
-  delay(5000);
+  delay(2000);
   Serial.begin(115200);
   Serial.println("Starting WiFi Robot Controller...");
 
@@ -108,30 +111,38 @@ void loop() {
     calibrateJoystick();
   }
 
-  if (enableLocalControl) {
+  // if (enableLocalControl) {
     // Read joystick values (swapped X and Y)
     joystickX = readJoystickX();
+    // Serial.println("Reading");
     joystickY = readJoystickY();
-    rotationX += joystickX/JOYSTICK_SCALE_X * OUTPUT_SCALE;
-    rotationY += joystickY/JOYSTICK_SCALE_Y * OUTPUT_SCALE;
+    rotationX += joystickX * OUTPUT_SCALE;
+    rotationY += joystickY * OUTPUT_SCALE;
     
     //read IMU data
     readIMUData(tiltX, tiltY, tiltZ);
     
-  }
+  // }
 
   // Update the servos
   servo1.write(rotationX);
   servo2.write(rotationY);
-  Serial.printf("Joystick X: %d", joystickX);
-  Serial.printf("Joystick Y: %d", joystickY); 
+  if(PRINT_JOYSTICK_VALUES){
+    Serial.printf("Joystick X: %d", joystickX);
+    Serial.printf("Joystick Y: %d", joystickY); 
+  }
 
+  if(PRINT_ROTATION_VALUES){
+    Serial.printf("Rotation X: %f", rotationX);
+    Serial.printf("Rotation Y: %f", rotationY);
+  }
   // Update the DC Motors
   setMotorSpeeds(tiltX, tiltY);
-  Serial.printf("TiltX: %f", tiltX);
-  Serial.printf("TiltY: %f", tiltY);
-  
+  if(PRINT_TILT_VALUES){
+    Serial.printf("TiltX: %f", tiltX);
+    Serial.printf("TiltY: %f", tiltY);
+  }
   // Print debug information with calibrated values
-  debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);
+  // debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);
   // Serial.println("Working");
 } 
