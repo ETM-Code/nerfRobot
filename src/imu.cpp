@@ -2,7 +2,6 @@
 #include "Wire.h"
 #include "pins.h"
 #include <Adafruit_MPU6050.h>
-#include <algorithm>
 
 // Initialize the IMU instance
 Adafruit_MPU6050 imu;
@@ -34,8 +33,11 @@ bool initializeIMU(void) {
     return true;
 }
 
-float clamp(float value, float min, float max) {
-    return std::min(std::max(value, min), max);
+//  Replace std::min/max with this function
+float clamp(float value, float minVal, float maxVal) {
+    if (value < minVal) return minVal;
+    if (value > maxVal) return maxVal;
+    return value;
 }
 
 void mapIMUData(float& tiltX, float& tiltY, float& tiltZ) {
@@ -49,11 +51,9 @@ void readIMUData(float& tiltX, float& tiltY, float& tiltZ) {
     imu.getEvent(&a, &g, &temp);
 
     tiltX = a.acceleration.x;
-    // Serial.println(a.acceleration.x);
     tiltY = a.acceleration.y;
     tiltZ = a.acceleration.z;
-    // mapIMUData(tiltX, tiltY, tiltZ);
-} 
+}
 
 void calibrateIMU(void) {
     sensors_event_t a, g, temp;
@@ -61,4 +61,5 @@ void calibrateIMU(void) {
     zeroX = a.acceleration.x;
     zeroY = a.acceleration.y;
 }
+
 
