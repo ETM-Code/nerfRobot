@@ -20,7 +20,7 @@
 #define STICK_Y A3
 
 //Calibration Pins
-#define IMU_CALIBRATION_PIN 7
-#define JOYSTICK_CALIBRATION_PIN 12
+#define CALIBRATION_PIN 7
+
 
 #endif // PINS_H
