@@ -107,16 +107,9 @@ void setup() {
 
 void loop() {
   webSocket.loop();
-
-  // Check for IMU calibration
-  if (imuPressed()) {
-    calibrateIMU();
-  }
-
-  // Check for Joystick calibration
-  if (joystickPressed()) {
-    calibrateJoystick();
-  }
+  
+  imuPressed() ? Serial.println("IMU Calibration Pressed") : 0;
+  joystickPressed() ? Serial.println("Joystick Calibration Pressed") : 0;
 
   // if (enableLocalControl) {
     // Read joystick values (swapped X and Y)
@@ -125,10 +118,18 @@ void loop() {
     if(joyXin < 10000) joystickX = joyXin;
     // Serial.println("Reading");
     if(joyYin < 10000) joystickY = joyYin;
-    rotationX += abs(joystickX) > 0.15 ? joystickX * OUTPUT_SCALE : 0;
+    float mappedX = joystickX;
+    float mappedY = joystickY;
+    if(joystickX > 0.15) {
+        mappedX = map(joystickX * 1000, 150, 1000, 0, 1000) / 1000.0f;
+    }
+    if(joystickY > 0.15) {
+        mappedY = map(joystickY * 1000, 150, 1000, 0, 1000) / 1000.0f;
+    }
+    rotationX += abs(joystickX) > 0.15 ? mappedX * OUTPUT_SCALE : 0;
     if(rotationX > 180) rotationX = 180;
     if(rotationX < 0) rotationX = 0;
-    rotationY += abs(joystickY) > 0.15 ? joystickY * OUTPUT_SCALE : 0;
+    rotationY += abs(joystickY) > 0.15 ? mappedY * OUTPUT_SCALE : 0;
     if(rotationY > 180) rotationY = 180;
     if(rotationY < 0) rotationY = 0;
     
@@ -139,6 +140,7 @@ void loop() {
 
   // Update the servos
   servo1.write(rotationX);
+  Serial.println(rotationX);
   servo2.write(rotationY);
 
   if(PRINT_JOYSTICK_VALUES && !shouldntReadJoystick()){

@@ -3,7 +3,7 @@
 
 #define JOYSTICK_SCALE_X 512.0
 #define JOYSTICK_SCALE_Y 512.0
-#define OUTPUT_SCALE 8.0
+#define OUTPUT_SCALE 0.1
 
 void setupJoystick(void);
 float readJoystickX(void);

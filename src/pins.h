@@ -12,8 +12,8 @@
 #define MOTOR_ENABLE_LEFT_PIN 10
 #define MOTOR_PWM_PIN 9
 //IMU - Using Arduino Nano ESP32's I2C pins
-#define SDA_PIN A4  // GPIO 8
-#define SCL_PIN A5  // GPIO 9
+#define SDA_PIN A4
+#define SCL_PIN A5
 
 //Joystick
 #define STICK_X A7
