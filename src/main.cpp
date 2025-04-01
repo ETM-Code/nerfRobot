@@ -12,7 +12,7 @@
 // WebSocket server instance
 WebSocketsServer webSocket = WebSocketsServer(81);
 bool clientConnected = false;
-bool enableLocalControl = true;
+bool enableLocalControl = false;
 
 bool PRINT_TILT_VALUES = false;
 bool PRINT_JOYSTICK_VALUES = false;
@@ -53,7 +53,7 @@ float joystickScaleX = 1.0;
 float joystickScaleY = 1.0;
 
 void setup() {
-  delay(2000);
+  delay(3000);
   Serial.begin(115200);
   Serial.println("Starting WiFi Robot Controller...");
 
@@ -92,6 +92,8 @@ void setup() {
   calibrateJoystick();
   Serial.print("Initial Joystick X reading: ");
   Serial.println(readJoystickX());
+  Serial.print("Current Time: ");
+  Serial.println(millis());
   Serial.print("Initial Joystick Y reading: ");
   Serial.println(readJoystickY());
 
@@ -103,10 +105,11 @@ void setup() {
   Serial.println(tiltY);
   Serial.print("Initial IMU Z reading: ");
   Serial.println(tiltZ);
+  delay(5000);
 }
 
 void loop() {
-  webSocket.loop();
+  // webSocket.loop();
   
   imuPressed() ? Serial.println("IMU Calibration Pressed") : 0;
   joystickPressed() ? Serial.println("Joystick Calibration Pressed") : 0;
@@ -140,8 +143,9 @@ void loop() {
 
   // Update the servos
   servo1.write(rotationX);
-  Serial.println(rotationX);
+  // Serial.println("Rotation X: " + String(rotationX));
   servo2.write(rotationY);
+  Serial.println("Rotation Y: " + String(rotationY));
 
   if(PRINT_JOYSTICK_VALUES && !shouldntReadJoystick()){
     unsigned long currentTime = millis();
@@ -171,6 +175,9 @@ void loop() {
       lastTiltPrint = currentTime;
     }
   }
+
+        // Serial.printf("TiltX: %f\n", tiltX);
+      // Serial.printf("TiltY: %f\n", tiltY);
   // Print debug information with calibrated values
   // debugPrintJoystickAndTilt(joystickX, joystickY, tiltX, tiltY);
   // Serial.println("Working");

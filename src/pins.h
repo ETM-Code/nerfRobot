@@ -16,7 +16,7 @@
 #define SCL_PIN A5
 
 //Joystick
-#define STICK_X A7
+#define STICK_X A6
 #define STICK_Y A3
 
 //Calibration Pins

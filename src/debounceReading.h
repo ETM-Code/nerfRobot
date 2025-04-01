@@ -9,7 +9,7 @@ static unsigned long lastIMUReading = 0;
 static unsigned long lastButtonReading = 0;
 inline bool shouldntReadJoystick(void){
     unsigned long currentTime = millis();
-    if(currentTime - lastJoystickReading > DEBOUNCE_TIME){
+    if(currentTime - lastJoystickReading > DEBOUNCE_TIME || currentTime < 15000){
         lastJoystickReading = currentTime;
         return false;
     }

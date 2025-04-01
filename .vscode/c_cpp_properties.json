@@ -505,7 +505,7 @@
                 ]
             },
             "defines": [
-                "PLATFORMIO=60117",
+                "PLATFORMIO=60118",
                 "ARDUINO_NANO_ESP32",
                 "BOARD_HAS_PIN_REMAP",
                 "BOARD_HAS_PSRAM",

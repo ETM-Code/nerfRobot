@@ -19,17 +19,17 @@ void uniCalib(void) {
 }
 
 bool imuPressed(void) {
-    if (digitalRead(IMU_CALIBRATION_PIN) == HIGH) {
-        lastIMUButtonPress = millis();
-    }
-   if(millis() - lastIMUButtonPress > IMU_BUTTON_PRESS_INTERVAL) {
-    if(unifiedCalibration) {
-        uniCalib();
-    } else {
-        calibrateIMU();
-    }
-    return true;
-   }
+//     if (digitalRead(IMU_CALIBRATION_PIN) == HIGH) {
+//         lastIMUButtonPress = millis();
+//     }
+//    if(millis() - lastIMUButtonPress > IMU_BUTTON_PRESS_INTERVAL) {
+//     if(unifiedCalibration) {
+//         uniCalib();
+//     } else {
+//         calibrateIMU();
+//     }
+//     return true;
+//    }
    return false;
 }
 
