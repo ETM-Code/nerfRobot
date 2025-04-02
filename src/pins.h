@@ -6,11 +6,11 @@
 #define SERVO2_PIN 3
 
 //DC Motors
-#define MOTOR_RIGHT_PIN A2
-#define MOTOR_LEFT_PIN A1
+#define MOTOR_RIGHT_PIN 5
+#define MOTOR_LEFT_PIN 7
 #define MOTOR_ENABLE_RIGHT_PIN 11
 #define MOTOR_ENABLE_LEFT_PIN 10
-#define MOTOR_PWM_PIN 9
+
 //IMU - Using Arduino Nano ESP32's I2C pins
 #define SDA_PIN A4
 #define SCL_PIN A5

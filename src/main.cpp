@@ -166,6 +166,7 @@ void loop() {
     }
   }
   // Update the DC Motors
+  activateMotors();
   setMotorSpeeds(tiltX, tiltY);
   if(PRINT_TILT_VALUES && shouldntReadIMU()){
     unsigned long currentTime = millis();

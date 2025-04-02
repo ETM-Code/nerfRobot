@@ -13,7 +13,7 @@ inline bool shouldntReadJoystick(void){
         lastJoystickReading = currentTime;
         return false;
     }
-    return true;
+    return false;
 }
 
 inline bool shouldntReadIMU(void){

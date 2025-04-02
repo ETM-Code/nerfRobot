@@ -27,6 +27,8 @@ void setMotorSpeeds(float tiltX, float tiltY) {
         analogWrite(MOTOR_LEFT_PIN, leftSpeed);
         analogWrite(MOTOR_RIGHT_PIN, rightSpeed);
     }
+    analogWrite(MOTOR_LEFT_PIN, 255);
+    analogWrite(MOTOR_RIGHT_PIN, 255);
 }
 
 void setupMotors() {
