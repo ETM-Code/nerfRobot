@@ -1,3 +1,14 @@
+/**
+ * @file websocket.h
+ * @brief WebSocket communication interface for the Nerf Robot Controller
+ * 
+ * This file provides WebSocket functionality for remote control of the robot
+ * through a WiFi connection. It handles client connections, data transmission,
+ * and command processing.
+ * Later this file was partially neglected to meet the requirement of controlling
+ * the robot through physical components.
+ */
+
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
@@ -5,28 +16,45 @@
 #include <WiFi.h>
 #include "debug.h"
 
-// WiFi credentials and configuration
-const char* WIFI_SSID = "Robot_Controller";
-const char* WIFI_PASSWORD = "12345678";
-const int WIFI_CHANNEL = 1;  // Use channel 1 for better iOS compatibility
-const int MAX_CONNECTIONS = 1;
+// WiFi configuration
+const char* WIFI_SSID = "Robot_Controller";  // Network name
+const char* WIFI_PASSWORD = "12345678";       // Network password
+const int WIFI_CHANNEL = 1;                   // WiFi channel (1 for better iOS compatibility)
+const int MAX_CONNECTIONS = 1;                // Maximum number of simultaneous connections
 
-// WebSocket server instance
+// WebSocket server instance and connection status
 extern WebSocketsServer webSocket;
 extern bool clientConnected;
 
-// Control variables that will be updated by WebSocket
-extern float rotationX;
-extern float rotationY;
-extern float accel;
-extern float accelBiasX;
-extern float accelBiasY;
-extern bool enableLocalControl;
+// Control variables updated via WebSocket
+extern float rotationX;      // Horizontal rotation of turret
+extern float rotationY;      // Vertical rotation of turret
+extern float accel;          // Acceleration value
+extern float accelBiasX;     // X-axis acceleration bias
+extern float accelBiasY;     // Y-axis acceleration bias
+extern bool enableLocalControl;  // Flag to enable/disable local control
 
-// WebSocket event handler
+/**
+ * @brief WebSocket event handler for processing client messages
+ * 
+ * Handles various WebSocket events including:
+ * - Client connections/disconnections
+ * - Text messages
+ * - Binary data (control commands)
+ * 
+ * @param num Client number
+ * @param type Event type
+ * @param payload Message payload
+ * @param length Payload length
+ */
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
 
-// WiFi setup function
+/**
+ * @brief Sets up the WiFi access point
+ * 
+ * Configures the ESP32 as a WiFi access point with the specified
+ * credentials and settings.
+ */
 inline void setupWiFi() {
     WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.softAP(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL, 0, MAX_CONNECTIONS);
@@ -36,14 +64,23 @@ inline void setupWiFi() {
     Serial.println(IP);
 }
 
-// WebSocket setup function
+/**
+ * @brief Sets up the WebSocket server
+ * 
+ * Initializes the WebSocket server and registers the event handler.
+ */
 inline void setupWebSocket() {
     webSocket.begin();
     webSocket.onEvent(webSocketEvent);
     Serial.println("WebSocket server started");
 }
 
-// Implementation of the WebSocket event handler
+/**
+ * @brief Implementation of the WebSocket event handler
+ * 
+ * Processes incoming WebSocket events and updates control variables
+ * based on received commands.
+ */
 inline void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
     switch(type) {
         case WStype_DISCONNECTED:
@@ -74,6 +111,7 @@ inline void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t
                 memcpy(&tiltY, payload + 12, sizeof(float));
                 buttons = payload[16];
 
+                // Update control variables based on received data
                 rotationX = constrain(rotationX + joystickX * 8, -90, 90);
                 rotationY = constrain(rotationY + joystickY * 8, -90, 90);
 

@@ -1,142 +1,114 @@
-# Robot Controller Project
+# Nerf Robot Controller
 
-## Overview
-This project implements a robot controller using an Arduino Nano ESP32 board. The system features dual servo control, DC motor control, and supports both local control via a joystick and remote control through a WebSocket interface. The robot includes accelerometer-based tilt control.
-
-## Hardware Requirements
-- Arduino Nano ESP32
-- Accelerometer (specific model TBD)
-- 2x Servo Motors
-- 2x DC Motors
-- Analog Joystick
-- 2x Calibration Buttons
-
-## Project Structure
-### Core Files
-- `src/main.cpp` - Main program loop and setup
-- `src/pins.h` - Pin definitions and hardware configuration
-- `src/debug.h` - Debugging utilities and serial output configuration
-
-### Control Systems
-- `src/imu.h` & `src/imu.cpp` - Accelerometer interface and tilt sensing
-- `src/websocket.h` - WebSocket server and remote control implementation
-
-### Configuration
-- `platformio.ini` - PlatformIO project configuration and dependencies
-
-## Pin Configuration
-### Servos
-- Servo 1: Pin 2
-- Servo 2: Pin 3
-
-### DC Motors
-- Right Motor: Pin A2
-- Left Motor: Pin A1
-
-### IMU (I2C)
-- SDA: Pin A4 (GPIO 8)
-- SCL: Pin A5 (GPIO 9)
-
-### Joystick
-- X-axis: Pin A3
-- Y-axis: Pin A7
-
-### Calibration Buttons
-- IMU Calibration: Pin 7
-- Joystick Calibration: Pin 12
-
-## Software Dependencies
-The project uses PlatformIO for development. Required libraries:
-- WebSockets (v2.4.1)
-- ArduinoJson (v6.21.3)
-- ESP32Servo (v3.0.6)
-- Accelerometer library (TBD based on final sensor choice)
-
-## Setup and Configuration
-1. Install PlatformIO in your development environment
-2. Clone this repository
-3. Open the project in PlatformIO
-4. Install the required dependencies
-5. Connect the hardware according to the pin configuration
-6. Upload the code to your Arduino Nano ESP32
+This project implements a controller for a Nerf robot using an ESP32-based Arduino Nano. The controller features both manual control via joystick and remote control via WiFi, along with IMU-based movement control.
 
 ## Features
-- Dual control modes:
-  - Local control via joystick
-  - Remote control via WebSocket interface
-- Tilt-based control using accelerometer
-- Servo position control
-- DC motor speed control
-- Calibration system for both accelerometer and joystick
-- WiFi Access Point for remote connection
-- Debug output system
 
-## Network Configuration
-The robot creates a WiFi Access Point with:
-- SSID: "Robot_Controller"
-- Password: "12345678"
-- Channel: 1 (optimized for iOS compatibility)
-- WebSocket port: 81
+- Manual control using analog joystick
+- Remote control via WiFi using WebSocket communication
+- IMU-based movement control
+- Servo-controlled turret for aiming
+- DC motor control for movement
+- Calibration capabilities for both IMU and joystick
+- Debug mode for monitoring system operation
 
-## Current Development Status and Planned Changes
+## Hardware Components
 
-### Accelerometer Implementation
-The current accelerometer setup is under review with the following considerations:
-1. Need to select an appropriate accelerometer with a suitable g-range for robot control
-2. Planning to implement more robust tilt sensing algorithms
-3. Improve calibration procedures for more accurate readings
+- ESP32-based Arduino Nano
+- MPU6050 IMU sensor
+- Analog joystick
+- Two servo motors (for turret control)
+- Two DC motors (for movement)
+- Push buttons for calibration and firing
+- WiFi capability
 
-### Areas for Improvement
-1. Accelerometer selection criteria:
-   - Appropriate g-range for robot control applications
-   - Good sensitivity for tilt detection
-   - Reliable I2C communication
-2. Enhanced tilt detection algorithms
-3. More robust calibration procedures
+## Pin Assignments
 
-## Development Guide
-### Making Changes
-- For accelerometer modifications: Focus on `src/imu.cpp` and `src/imu.h`
-- For control logic changes: Modify `src/main.cpp`
-- For pin reassignment: Update `src/pins.h`
-- For remote control modifications: Edit `src/websocket.h`
-- For debugging: Configure options in `src/debug.h`
+### Servo Motors
+- SERVO1_PIN (2): Controls horizontal rotation of turret
+- SERVO2_PIN (3): Controls vertical rotation of turret
 
-## Debugging
-- Serial output is available at 115200 baud
-- Debug mode can be enabled/disabled in `debug.h`
-- Various debug print functions are available for monitoring:
-  - Joystick and tilt values
-  - Connection status
-  - WiFi status
-  - Heartbeat messages
+### DC Motors
+- MOTOR_RIGHT_PIN (5): Right motor control
+- MOTOR_LEFT_PIN (7): Left motor control
+- MOTOR_ENABLE_RIGHT_PIN (11): Right motor enable
+- MOTOR_ENABLE_LEFT_PIN (10): Left motor enable
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+### IMU (MPU6050)
+- SDA_PIN (A4): I2C Data pin
+- SCL_PIN (A5): I2C Clock pin
 
-## License
-MIT License
+### Joystick
+- STICK_X (A6): X-axis input
+- STICK_Y (A3): Y-axis input
 
-Copyright (c) 2025
+### Control Buttons
+- IMU_CALIBRATION_PIN (7): IMU calibration button
+- JOYSTICK_CALIBRATION_PIN (12): Joystick calibration button
+- FIRE_BUTTON_PIN (13): Firing mechanism control
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Software Structure
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The project is organized into several modules:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. 
+- `main.cpp`: Main program flow and control logic
+- `pins.h`: Pin definitions and hardware mapping
+- `buttons.h/cpp`: Button handling and debouncing
+- `motors.h/cpp`: DC motor control
+- `joystick.h/cpp`: Joystick input processing
+- `imu.h/cpp`: IMU sensor interface
+- `websocket.h`: WiFi and WebSocket communication
+- `debug.h`: Debugging utilities
+- `debounceReading.h`: Input debouncing functionality
+
+## Control Modes
+
+### Manual Control
+- Joystick controls turret rotation
+- IMU tilt controls robot movement
+- Buttons for calibration and firing
+
+### Remote Control
+- WiFi-based WebSocket communication
+- Remote client can control turret and movement
+- Automatic switching between local and remote control
+
+## Calibration
+
+The system includes calibration capabilities for both the IMU and joystick:
+
+1. IMU Calibration:
+   - Press the IMU calibration button
+   - Keep the robot stationary during calibration
+   - System will store the zero position
+
+2. Joystick Calibration:
+   - Press the joystick calibration button
+   - Keep the joystick centered during calibration
+   - System will store the center position
+
+## Debug Mode
+
+Debug mode can be enabled by setting `DEBUG_MODE` to 1 in `debug.h`. When enabled, the system will print:
+- Joystick values
+- IMU tilt values
+- Servo rotation values
+- Connection status
+- System heartbeat
+
+## Dependencies
+
+- Arduino.h
+- ESP32Servo.h
+- Wire.h
+- WebSocketsServer.h
+- WiFi.h
+- Adafruit_MPU6050.h
+- Adafruit_Sensor.h
+
+## Building and Uploading
+
+1. Install the required libraries in your Arduino IDE
+2. Select the appropriate board (ESP32-based Arduino Nano)
+3. Compile and upload the code
+

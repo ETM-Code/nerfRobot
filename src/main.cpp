@@ -1,3 +1,11 @@
+/**
+ * @file main.cpp
+ * @brief Main program for the Nerf Robot Controller
+ * 
+ * This file contains the main program flow for the Nerf Robot Controller,
+ * including initialization, main loop, and control logic.
+ */
+
 #include <Arduino.h>
 #include <ESP32Servo.h>
 #include <pins.h>
@@ -9,54 +17,69 @@
 #include "buttons.h"
 #include "motors.h"
 #include "debounceReading.h"
-// WebSocket server instance
+
+// WebSocket server instance and control flags
 WebSocketsServer webSocket = WebSocketsServer(81);
 bool clientConnected = false;
 bool enableLocalControl = false;
 
+// Debug print flags
 bool PRINT_TILT_VALUES = false;
 bool PRINT_JOYSTICK_VALUES = false;
 bool PRINT_ROTATION_VALUES = false;
-// Servo objects
-Servo servo1;
-Servo servo2;
+bool STARTUP_DELAY = false;
 
-// Control variables
-float rotationX = 90;
-float rotationY = 90;
-float accel = 0;
-float accelBiasX = 0;
-float accelBiasY = 0;
+// Servo objects for turret control
+Servo servo1;  // Controls horizontal rotation
+Servo servo2;  // Controls vertical rotation
 
-// Timestamps for non-blocking prints
+// Control variables for turret positioning
+float rotationX = 90;  // Initial horizontal position
+float rotationY = 90;  // Initial vertical position
+float accel = 0;       // Current acceleration
+float accelBiasX = 0;  // X-axis acceleration bias
+float accelBiasY = 0;  // Y-axis acceleration bias
+
+// Timestamps for non-blocking debug prints
 unsigned long lastJoystickPrint = 0;
 unsigned long lastRotationPrint = 0;
 unsigned long lastTiltPrint = 0;
-const unsigned long PRINT_INTERVAL = 100; // 100ms interval
+const unsigned long PRINT_INTERVAL = 100; // 100ms interval for debug prints
 
-// Joystick and IMU variables
-float tiltX = 0;
-float tiltY = 0;
-float tiltZ = 0;
-float magX = 0;
-float magY = 0;
-float magZ = 0;
-float joystickX = 0;
-float joystickY = 0;
+// Sensor reading variables
+float tiltX = 0;  // X-axis tilt from IMU
+float tiltY = 0;  // Y-axis tilt from IMU
+float tiltZ = 0;  // Z-axis tilt from IMU
+float magX = 0;   // X-axis magnetic field
+float magY = 0;   // Y-axis magnetic field
+float magZ = 0;   // Z-axis magnetic field
+float joystickX = 0;  // X-axis joystick value
+float joystickY = 0;  // Y-axis joystick value
 
 // Calibration variables
-float imuOffsetX = 0;
-float imuOffsetY = 0;
-float joystickOffsetX = 0;
-float joystickOffsetY = 0;
-float joystickScaleX = 1.0;
-float joystickScaleY = 1.0;
+float imuOffsetX = 0;      // IMU X-axis offset
+float imuOffsetY = 0;      // IMU Y-axis offset
+float joystickOffsetX = 0; // Joystick X-axis offset
+float joystickOffsetY = 0; // Joystick Y-axis offset
+float joystickScaleX = 1.0; // Joystick X-axis scaling
+float joystickScaleY = 1.0; // Joystick Y-axis scaling
 
+/**
+ * @brief Initial setup function
+ * 
+ * Performs all necessary initialization including:
+ * - Serial communication
+ * - WiFi and WebSocket setup
+ * - Servo and motor initialization
+ * - IMU and joystick setup
+ * - Initial calibration
+ */
 void setup() {
-  delay(3000);
+  if(STARTUP_DELAY) delay(3000);  // Startup delay
   Serial.begin(115200);
   Serial.println("Starting WiFi Robot Controller...");
 
+  // Initialize WiFi and WebSocket
   setupWiFi();
   setupWebSocket();
   
@@ -76,19 +99,16 @@ void setup() {
   setupButtons();
 
   // Initialize IMU
-  if (!initializeIMU())
-  {
+  if (!initializeIMU()) {
     Serial.println("Failed to initialize IMU. Please check connections:");
     Serial.println("- Ensure IMU is properly connected to SDA and SCL pins");
     Serial.println("- Check power connections (3.3V and GND)");
     Serial.println("- Verify IMU address");
-  }
-  else
-  {
+  } else {
     Serial.println("IMU initialized successfully");
   }
 
-  // Print initial analog readings
+  // Perform initial calibration
   calibrateJoystick();
   Serial.print("Initial Joystick X reading: ");
   Serial.println(readJoystickX());
@@ -105,12 +125,21 @@ void setup() {
   Serial.println(tiltY);
   Serial.print("Initial IMU Z reading: ");
   Serial.println(tiltZ);
-  delay(5000);
+  if(STARTUP_DELAY) delay(5000);
 }
 
+/**
+ * @brief Main program loop
+ * 
+ * Handles the continuous operation of the robot including:
+ * - Reading sensor inputs
+ * - Processing control commands
+ * - Updating servo positions
+ * - Controlling motor speeds
+ * - Debug printing
+ */
 void loop() {
-  // webSocket.loop();
-  
+  // Check for calibration button presses
   imuPressed() ? Serial.println("IMU Calibration Pressed") : 0;
   joystickPressed() ? Serial.println("Joystick Calibration Pressed") : 0;
 
@@ -147,6 +176,7 @@ void loop() {
   servo2.write(rotationY);
   Serial.println("Rotation Y: " + String(rotationY));
 
+  // Debug printing for joystick values
   if(PRINT_JOYSTICK_VALUES && !shouldntReadJoystick()){
     unsigned long currentTime = millis();
     if (currentTime - lastJoystickPrint >= PRINT_INTERVAL) {
@@ -156,6 +186,7 @@ void loop() {
     }
   }
 
+  // Debug printing for rotation values
   if(PRINT_ROTATION_VALUES){
     unsigned long currentTime = millis();
     if (currentTime - lastRotationPrint >= PRINT_INTERVAL) {
@@ -165,9 +196,12 @@ void loop() {
       lastRotationPrint = currentTime;
     }
   }
-  // Update the DC Motors
+
+  // Update motor speeds based on IMU tilt
   activateMotors();
   setMotorSpeeds(tiltX, tiltY);
+
+  // Debug printing for tilt values
   if(PRINT_TILT_VALUES && shouldntReadIMU()){
     unsigned long currentTime = millis();
     if (currentTime - lastTiltPrint >= PRINT_INTERVAL) {
