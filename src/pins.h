@@ -32,4 +32,6 @@
 #define JOYSTICK_CALIBRATION_PIN 12 // Button for joystick calibration
 #define FIRE_BUTTON_PIN 13         // Button connected to solenoid for firing mechanism
 
+#define SOLENOID_PIN 6
+
 #endif // PINS_H

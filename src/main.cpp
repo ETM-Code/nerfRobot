@@ -139,11 +139,19 @@ void setup() {
  * - Debug printing
  */
 void loop() {
-  // Check for calibration button presses
-  imuPressed() ? Serial.println("IMU Calibration Pressed") : 0;
-  joystickPressed() ? Serial.println("Joystick Calibration Pressed") : 0;
+  webSocket.loop();
+  if (enableLocalControl) {
+    // Check for calibration button presses
+    imuPressed() ? Serial.println("IMU Calibration Pressed") : 0;
+    joystickPressed() ? Serial.println("Joystick Calibration Pressed") : 0;
+    if (firePressed()) {
+      Serial.println("Fire Pressed");
+      digitalWrite(SOLENOID_PIN, HIGH);
+      delay(100);
+      digitalWrite(SOLENOID_PIN, LOW);
+    }
 
-  // if (enableLocalControl) {
+
     // Read joystick values (swapped X and Y)
     float joyXin = readJoystickX();
     float joyYin = readJoystickY();
@@ -167,8 +175,7 @@ void loop() {
     
     //read IMU data
     readIMUData(tiltX, tiltY, tiltZ);
-    
-  // }
+  }
 
   // Update the servos
   servo1.write(rotationX);

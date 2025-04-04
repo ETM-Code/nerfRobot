@@ -112,8 +112,9 @@ inline void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t
                 buttons = payload[16];
 
                 // Update control variables based on received data
-                rotationX = constrain(rotationX + joystickX * 8, -90, 90);
-                rotationY = constrain(rotationY + joystickY * 8, -90, 90);
+                // Map the increment to match the 0-180 range used in main.cpp
+                rotationX = constrain(rotationX + joystickX * 8, 0, 180);
+                rotationY = constrain(rotationY + joystickY * 8, 0, 180);
 
                 accel = tiltX;
                 if(abs(tiltY) > 0.5) {
